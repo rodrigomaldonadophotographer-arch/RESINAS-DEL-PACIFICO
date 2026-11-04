@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#062f50">
+  <meta name="description" content="Catálogo de productos y servicios en fibra de vidrio de Resinas del Pacífico.">
+  <title>Resinas del Pacífico | Catálogo</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="icon" href="assets/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#catalogo">Ir al catálogo</a>
+
+  <header class="site-header" id="inicio">
+    <a class="brand" href="#inicio" aria-label="Resinas del Pacífico, inicio">
+      <img src="assets/logo.jpg" alt="Resinas del Pacífico" width="70" height="65">
+      <span><strong>Resinas del Pacífico</strong><small>Fibra de vidrio · Ixtapa, Jalisco</small></span>
+    </a>
+    <nav aria-label="Navegación principal">
+      <a href="#historia">40 años</a>
+      <a href="#catalogo">Productos</a>
+      <a href="#servicios">Servicios</a>
+    </nav>
+    <button class="order-trigger" type="button" data-open-cart>
+      Revisar solicitud <span class="cart-count" aria-label="productos seleccionados">0</span>
+    </button>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-photo" role="img" aria-label="Macetas fabricadas en fibra de vidrio"></div>
+      <div class="hero-shade"></div>
+      <div class="hero-content reveal">
+        <span class="eyebrow light">Desde 1984 · fabricación propia</span>
+        <h1 id="hero-title">Diseño que resiste.<br><em>Piezas que perduran.</em></h1>
+        <p>Macetas, accesorios, fuentes y proyectos a medida en fibra de vidrio, hechos en taller con atención al detalle.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#catalogo">Ver productos</a>
+          <a class="button ghost" href="#servicios">Cotizar proyecto</a>
+        </div>
+      </div>
+      <div class="hero-seal" aria-hidden="true"><strong>40</strong><span>años<br>creando</span></div>
+    </section>
+
+    <section class="legacy section" id="historia">
+      <div class="legacy-heading reveal">
+        <span class="eyebrow">Una historia hecha para durar</span>
+        <h2>Cuatro décadas<br><em>transformando espacios.</em></h2>
+      </div>
+      <div class="legacy-copy reveal">
+        <p>Resinas del Pacífico celebra 40 años de esfuerzo, innovación y confianza. Cada pieza se fabrica en su propio taller, combinando diseño, durabilidad y la posibilidad de elegir color, forma y tamaño.</p>
+        <div class="legacy-metrics">
+          <div><strong>1984</strong><span>Inicio de la historia</span></div>
+          <div><strong>+100</strong><span>Diseños disponibles</span></div>
+          <div><strong>1 a 1</strong><span>Asesoría para tu proyecto</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="anniversary-band" aria-label="40 años de Resinas del Pacífico">
+      <span class="anniversary-line" aria-hidden="true"></span>
+      <div class="anniversary-mark reveal">
+        <strong>40</strong>
+        <span><b>años</b><small>Diseño · Resistencia · Confianza</small></span>
+      </div>
+      <span class="anniversary-line" aria-hidden="true"></span>
+    </section>
+
+    <section class="catalog section" id="catalogo" aria-labelledby="catalog-title">
+      <div class="section-heading reveal">
+        <div><span class="eyebrow">Elige, combina y solicita</span><h2 id="catalog-title">Catálogo <em>esencial.</em></h2></div>
+        <p>Los precios se confirman según medida, color, acabado, complementos, instalación y entrega.</p>
+      </div>
+      <div class="category-tabs" role="tablist" aria-label="Filtrar productos">
+        <button class="active" type="button" data-filter="todos">Todo</button>
+        <button type="button" data-filter="macetas">Macetas</button>
+        <button type="button" data-filter="jarrones">Jarrones</button>
+        <button type="button" data-filter="decoracion">Decoración</button>
+        <button type="button" data-filter="proyectos">Proyectos</button>
+      </div>
+      <div class="product-grid" id="product-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="services section" id="servicios" aria-labelledby="services-title">
+      <div class="section-heading inverse reveal">
+        <div><span class="eyebrow light">Del boceto a la instalación</span><h2 id="services-title">Servicio completo<br><em>en fibra de vidrio.</em></h2></div>
+        <p>Selecciona un servicio y agrégalo a tu solicitud para recibir atención personalizada.</p>
+      </div>
+      <div class="service-stack" id="service-stack"></div>
+    </section>
+
+    <section class="cta-band">
+      <div class="reveal"><span class="eyebrow light">Tu idea puede comenzar hoy</span><h2>Imagina el espacio.<br><em>Ellos crean la pieza.</em></h2></div>
+      <button class="button white" type="button" data-open-cart>Revisar solicitud</button>
+    </section>
+
+    <section class="contact-strip" aria-label="Enlaces oficiales">
+      <div><span class="eyebrow">Canales oficiales</span><h2>Conoce más de su trabajo.</h2></div>
+      <div class="official-links">
+        <a href="https://www.facebook.com/resinasdelpacifico" target="_blank" rel="noopener">Facebook <span aria-hidden="true">↗</span></a>
+        <a href="https://resinasdelpacifico.com/" target="_blank" rel="noopener">Sitio web <span aria-hidden="true">↗</span></a>
+        <a href="https://www.instagram.com/resinasdelpacifico/" target="_blank" rel="noopener">Instagram <span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <img src="assets/logo.jpg" alt="" width="90" height="84">
+    <p>Resinas del Pacífico · Piezas y proyectos en fibra de vidrio.</p>
+    <p>Información y disponibilidad sujetas a confirmación.</p>
+  </footer>
+
+  <div class="floating-links" aria-label="Accesos rápidos">
+    <a href="https://www.facebook.com/resinasdelpacifico" target="_blank" rel="noopener" aria-label="Abrir Facebook">f</a>
+    <a class="wa" href="https://wa.me/523221200860" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">W</a>
+  </div>
+
+  <div class="drawer-backdrop" data-close-cart hidden></div>
+  <aside class="cart-drawer" aria-labelledby="cart-title" aria-hidden="true">
+    <div class="drawer-head">
+      <div><span class="eyebrow">Solicitud de cotización</span><h2 id="cart-title">Revisa tu selección</h2></div>
+      <button class="icon-button" type="button" data-close-cart aria-label="Cerrar">×</button>
+    </div>
+    <div class="drawer-scroll">
+      <div class="empty-cart" id="empty-cart">
+        <span aria-hidden="true">◇</span>
+        <p>Aún no agregas productos o servicios.</p>
+        <button type="button" data-close-cart>Explorar catálogo</button>
+      </div>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="quote-total" id="quote-total" hidden><span>Total estimado</span><strong>Sujeto a cotización</strong></div>
+
+      <form id="quote-form">
+        <fieldset>
+          <legend>¿Cómo quieres recibir tu pedido?</legend>
+          <div class="choice-grid">
+            <label><input type="radio" name="delivery" value="Recoger en tienda" checked><span>Recoger</span></label>
+            <label><input type="radio" name="delivery" value="Entrega a domicilio"><span>Domicilio</span></label>
+            <label><input type="radio" name="delivery" value="Proyecto con instalación"><span>Instalación</span></label>
+          </div>
+        </fieldset>
+        <label>Nombre<input name="name" autocomplete="name" required placeholder="¿A nombre de quién?"></label>
+        <label>Teléfono<input name="phone" type="tel" autocomplete="tel" required placeholder="Tu número de contacto"></label>
+        <label id="address-field" hidden>Dirección de entrega<input name="address" autocomplete="street-address" placeholder="Calle, número y colonia"></label>
+        <label>Forma de pago preferida
+          <select name="payment" required>
+            <option value="Por definir">Por definir</option>
+            <option value="Efectivo, sujeto a confirmación">Efectivo</option>
+            <option value="Transferencia, sujeta a confirmación">Transferencia</option>
+            <option value="Tarjeta, sujeta a confirmación">Tarjeta</option>
+          </select>
+        </label>
+        <label>Observaciones<textarea name="notes" rows="4" placeholder="Color, acabado, medidas, cantidad o detalles del proyecto"></textarea></label>
+        <p class="form-note">El negocio confirmará precio, disponibilidad, formas de pago y condiciones de entrega.</p>
+        <button class="send-button" type="submit">Enviar solicitud por WhatsApp <span aria-hidden="true">↗</span></button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
