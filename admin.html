@@ -676,10 +676,36 @@
               Publicado en catálogo
             </label>
 
-            <p class="ayuda">
-              La fotografía actual se conserva
-              al editar este servicio.
-            </p>
+            <label for="servicio-foto">
+  Fotografía del servicio
+</label>
+
+<input
+  id="servicio-foto"
+  type="file"
+  accept="image/jpeg,image/png,image/webp"
+>
+
+<img
+  id="servicio-vista-previa"
+  alt="Vista previa del servicio"
+  class="oculto"
+  style="
+    width:100%;
+    max-width:300px;
+    max-height:250px;
+    object-fit:contain;
+    margin-top:12px;
+    border-radius:8px;
+  "
+>
+
+<p class="ayuda">
+  Una fotografía por servicio.
+  Máximo 2 MB.
+  Si no seleccionas otra, se conserva
+  la fotografía actual.
+</p>
 
             <div class="acciones">
 
@@ -1608,6 +1634,160 @@
 
       limpiarMensaje();
     }
+
+    
+    // ======================================
+    // FOTOGRAFIAS - BARRIO DIGITAL
+    // ======================================
+
+    const BUCKET_IMAGENES = "bd-imagenes";
+
+    const TIPOS_IMAGEN = [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ];
+
+    const MAX_IMAGEN_BYTES = 2 * 1024 * 1024;
+
+    function validarFotografia(archivo) {
+      if (!archivo) return;
+
+      if (!TIPOS_IMAGEN.includes(archivo.type)) {
+        throw new Error(
+          "Selecciona una fotografía JPG, PNG o WEBP."
+        );
+      }
+
+      if (archivo.size > MAX_IMAGEN_BYTES) {
+        throw new Error(
+          "La fotografía supera el máximo de 2 MB."
+        );
+      }
+
+      if (archivo.size === 0) {
+        throw new Error(
+          "La fotografía seleccionada está vacía."
+        );
+      }
+    }
+
+    function mostrarVistaPrevia(tipo) {
+      const entrada = $(tipo + "-foto");
+      const vista = $(tipo + "-vista-previa");
+
+      const archivo = entrada.files?.[0];
+
+      if (!archivo) {
+        vista.removeAttribute("src");
+        vista.classList.add("oculto");
+        return;
+      }
+
+      try {
+        validarFotografia(archivo);
+
+        const lector = new FileReader();
+
+        lector.onload = () => {
+          vista.src = lector.result;
+          vista.classList.remove("oculto");
+        };
+
+        lector.readAsDataURL(archivo);
+
+      } catch (error) {
+        entrada.value = "";
+        vista.removeAttribute("src");
+        vista.classList.add("oculto");
+        mostrarMensaje(error.message);
+      }
+    }
+
+    function limpiarVistaPrevia(tipo) {
+      const entrada = $(tipo + "-foto");
+      const vista = $(tipo + "-vista-previa");
+
+      entrada.value = "";
+      vista.removeAttribute("src");
+      vista.classList.add("oculto");
+    }
+
+    async function subirFotografia(archivo, carpeta) {
+      if (!archivo) return null;
+
+      if (!accesoAutorizado || !negocioActual) {
+        throw new Error("Acceso no autorizado.");
+      }
+
+      validarFotografia(archivo);
+
+      const extension = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp"
+      }[archivo.type];
+
+      const nombre = crypto.randomUUID() + "." + extension;
+
+      const ruta = [
+        negocioActual.id,
+        carpeta,
+        nombre
+      ].join("/");
+
+      const { error } = await supabase.storage
+        .from(BUCKET_IMAGENES)
+        .upload(ruta, archivo, {
+          contentType: archivo.type,
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (error) {
+        throw new Error(
+          "No se pudo subir la fotografía: " +
+          error.message
+        );
+      }
+
+      const { data } = supabase.storage
+        .from(BUCKET_IMAGENES)
+        .getPublicUrl(ruta);
+
+      return {
+        ruta,
+        url: data.publicUrl
+      };
+    }
+
+    async function retirarSubidaFallida(subida) {
+      if (!subida?.ruta) return;
+
+      const { error } = await supabase.storage
+        .from(BUCKET_IMAGENES)
+        .remove([subida.ruta]);
+
+      if (error) {
+        mostrarMensaje(
+          "La fotografía se subió, pero no se pudo " +
+          "vincular al registro ni retirar el archivo. " +
+          "Comunícalo al administrador general. Ruta: " +
+          subida.ruta
+        );
+      }
+    }
+
+    $("producto-foto").addEventListener(
+      "change",
+      () => mostrarVistaPrevia("producto")
+    );
+
+    $("servicio-foto").addEventListener(
+      "change",
+      () => mostrarVistaPrevia("servicio")
+    );
+
 
     // ======================================
     // EVENTOS
