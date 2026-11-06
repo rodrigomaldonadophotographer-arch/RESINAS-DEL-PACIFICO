@@ -1,57 +1,89 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
-
-  <title>
-    Administrador | Resinas del Pacífico
-  </title>
+  <title>ADMIN | Barrio Digital</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
       display: flex;
-      align-items: center;
       justify-content: center;
-      background: #111;
-      color: #fff;
+      align-items: center;
+      background: #101010;
+      color: white;
       font-family: Arial, sans-serif;
+      padding: 20px;
     }
 
     .panel {
-      width: min(400px, 90%);
+      width: 100%;
+      max-width: 420px;
       padding: 30px;
       background: #1d1d1d;
       border: 1px solid #c9a45c;
       border-radius: 15px;
-      text-align: center;
     }
 
     h1 {
-      color: #c9a45c;
+      color: #d9b66f;
+      text-align: center;
       font-size: 25px;
     }
 
-    p {
-      line-height: 1.6;
+    h2 {
+      text-align: center;
+      font-size: 16px;
+      font-weight: normal;
     }
 
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 12px 20px;
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 9px 0;
+      border: 1px solid #555;
+      border-radius: 7px;
+      background: #292929;
+      color: white;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
       background: #c9a45c;
       color: #111;
+      border: none;
       border-radius: 7px;
-      text-decoration: none;
       font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .oculto {
+      display: none;
     }
   </style>
 </head>
@@ -61,24 +93,318 @@
   <main class="panel">
 
     <h1>BARRIO DIGITAL</h1>
+    <h2>Administrador de Resinas del Pacífico</h2>
 
-    <h2>Resinas del Pacífico</h2>
+    <section id="login">
 
-    <p>
-      Administrador del catálogo
-    </p>
+      <form id="formulario">
 
-    <p>
-      Estamos preparando el acceso
-      para gestionar productos,
-      servicios y fotografías.
-    </p>
+        <input
+          id="correo"
+          type="email"
+          placeholder="Correo electrónico"
+          autocomplete="username"
+          required
+        >
 
-    <a href="index.html">
-      Volver al catálogo
-    </a>
+        <input
+          id="contrasena"
+          type="password"
+          placeholder="Contraseña"
+          autocomplete="current-password"
+          required
+        >
+
+        <button id="entrar" type="submit">
+          INICIAR SESIÓN
+        </button>
+
+      </form>
+
+    </section>
+
+    <section id="sesion" class="oculto">
+
+      <p id="usuario"></p>
+
+      <button id="probar" type="button">
+        PROBAR CONEXIÓN
+      </button>
+
+      <button id="salir" type="button">
+        CERRAR SESIÓN
+      </button>
+
+    </section>
+
+    <div id="resultado" role="status"></div>
 
   </main>
+
+  <script type="module">
+
+    import {
+      createClient
+    } from "https://esm.sh/@supabase/supabase-js@2";
+
+    // ======================================
+    // CONFIGURACION BARRIO DIGITAL
+    // ======================================
+
+    const SUPABASE_URL =
+      "https://epxbvaeantfeduhkolal.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_jVso9pjnYOF-X6nBHDNEZg_IOurDgJ7";
+
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false
+        }
+      }
+    );
+
+    const NEGOCIO =
+      "resinas-del-pacifico";
+
+    const formulario =
+      document.getElementById("formulario");
+
+    const login =
+      document.getElementById("login");
+
+    const sesion =
+      document.getElementById("sesion");
+
+    const resultado =
+      document.getElementById("resultado");
+
+    const botonEntrar =
+      document.getElementById("entrar");
+
+    let sesionActual = null;
+
+    function mensaje(texto) {
+      resultado.textContent = texto;
+    }
+
+    function mostrarSesion(correo) {
+      login.classList.add("oculto");
+      sesion.classList.remove("oculto");
+
+      document.getElementById(
+        "usuario"
+      ).textContent = "Usuario: " + correo;
+    }
+
+    function mostrarLogin() {
+      sesion.classList.add("oculto");
+      login.classList.remove("oculto");
+    }
+
+    formulario.addEventListener(
+      "submit",
+      async (evento) => {
+
+        evento.preventDefault();
+
+        botonEntrar.disabled = true;
+        mensaje("Comprobando acceso...");
+
+        try {
+
+          const correo =
+            document.getElementById(
+              "correo"
+            ).value.trim();
+
+          const contrasena =
+            document.getElementById(
+              "contrasena"
+            ).value;
+
+          const {
+            data,
+            error
+          } = await supabase.auth
+            .signInWithPassword({
+              email: correo,
+              password: contrasena
+            });
+
+          if (error) {
+            throw error;
+          }
+
+          if (!data.session) {
+            throw new Error(
+              "No se recibió una sesión válida."
+            );
+          }
+
+          // Verificar permiso específico
+          // para Resinas del Pacífico.
+
+          const {
+            data: negocios,
+            error: errorPermisos
+          } = await supabase
+            .from("bd_negocios")
+            .select("id, nombre, slug")
+            .eq("slug", NEGOCIO)
+            .limit(1);
+
+          if (errorPermisos) {
+            throw errorPermisos;
+          }
+
+          if (!negocios?.length) {
+            throw new Error(
+              "No se encontró el negocio."
+            );
+          }
+
+          const {
+            data: autorizado,
+            error: errorAutorizacion
+          } = await supabase.rpc(
+            "bd_puede_administrar",
+            {
+              p_negocio_id: negocios[0].id
+            }
+          );
+
+          if (errorAutorizacion) {
+            throw errorAutorizacion;
+          }
+
+          if (autorizado !== true) {
+            await supabase.auth.signOut();
+
+            throw new Error(
+              "Este usuario no administra Resinas."
+            );
+          }
+
+          sesionActual = data.session;
+
+          document.getElementById(
+            "contrasena"
+          ).value = "";
+
+          mostrarSesion(
+            data.user.email
+          );
+
+          mensaje(
+            "Acceso autorizado.\n" +
+            "Negocio: " + negocios[0].nombre +
+            "\nPermiso: administrador"
+          );
+
+        } catch (error) {
+
+          sesionActual = null;
+          await supabase.auth.signOut();
+
+          mensaje(
+            "Error: " + error.message
+          );
+
+        } finally {
+
+          botonEntrar.disabled = false;
+
+        }
+
+      }
+    );
+
+    document.getElementById(
+      "probar"
+    ).addEventListener(
+      "click",
+      async () => {
+
+        if (!sesionActual) {
+          mensaje("Inicia sesión primero.");
+          return;
+        }
+
+        mensaje(
+          "Probando Edge Function..."
+        );
+
+        try {
+
+          const respuesta = await fetch(
+            SUPABASE_URL +
+            "/functions/v1/bd-eliminar-imagenes",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+
+                "apikey":
+                  SUPABASE_KEY,
+
+                "Authorization":
+                  "Bearer " +
+                  sesionActual.access_token
+              },
+              body: JSON.stringify({})
+            }
+          );
+
+          const datos =
+            await respuesta.json();
+
+          mensaje(
+            "HTTP: " + respuesta.status +
+            "\n\n" +
+            JSON.stringify(
+              datos,
+              null,
+              2
+            )
+          );
+
+        } catch (error) {
+
+          mensaje(
+            "Error de conexión: " +
+            error.message
+          );
+
+        }
+
+      }
+    );
+
+    document.getElementById(
+      "salir"
+    ).addEventListener(
+      "click",
+      async () => {
+
+        await supabase.auth.signOut();
+
+        sesionActual = null;
+
+        mostrarLogin();
+
+        mensaje("Sesión cerrada.");
+
+      }
+    );
+
+  </script>
 
 </body>
 </html>
