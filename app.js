@@ -121,43 +121,106 @@ function mostrarErrorCatalogo() {
   serviceStack.innerHTML = '<p class="catalog-status">Los servicios no están disponibles temporalmente.</p>';
 }
 
+// Actualización discreta: no recargar la página ni vaciar el carrito.
+const INTERVALO_ACTUALIZACION = 45000;
+let consultaEnCurso = false;
+let firmaCatalogo = null;
+let actualizacionPendiente = null;
+let catalogoCargado = false;
+let clienteSupabasePromesa = null;
+let negocioId = null;
+
+async function obtenerClienteSupabase() {
+  if (!clienteSupabasePromesa) {
+    clienteSupabasePromesa = import("https://esm.sh/@supabase/supabase-js@2")
+      .then(({ createClient }) => createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      }))
+      .catch(error => {
+        clienteSupabasePromesa = null;
+        throw error;
+      });
+  }
+  return clienteSupabasePromesa;
+}
+
+function fichaAbierta() {
+  const ficha = document.querySelector("#bd-ficha");
+  return ficha && !ficha.hidden;
+}
+
+function aplicarDatosCatalogo(datos) {
+  products = datos.productos;
+  services = datos.servicios;
+  allItems = [...products, ...services];
+  firmaCatalogo = datos.firma;
+  catalogoCargado = true;
+  actualizacionPendiente = null;
+  renderProducts(obtenerFiltroActual());
+  renderServices();
+  renderCart();
+}
+
+function aplicarActualizacionPendiente() {
+  if (actualizacionPendiente && !fichaAbierta()) {
+    aplicarDatosCatalogo(actualizacionPendiente);
+  }
+}
+
 async function cargarCatalogo() {
+  if (consultaEnCurso || !navigator.onLine) return;
+  consultaEnCurso = true;
+  const primeraCarga = !catalogoCargado;
+  if (primeraCarga) mostrarCargando();
+
   try {
-    mostrarCargando();
-    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-    });
-    const { data: negocio, error: errorNegocio } = await supabase
-      .from("bd_negocios").select("id,nombre")
-      .eq("slug", NEGOCIO_SLUG).eq("activo", true).single();
-    if (errorNegocio || !negocio) throw new Error("No se pudo identificar el negocio.");
+    const supabase = await obtenerClienteSupabase();
+    if (!negocioId) {
+      const { data: negocio, error: errorNegocio } = await supabase
+        .from("bd_negocios").select("id,nombre")
+        .eq("slug", NEGOCIO_SLUG).eq("activo", true).single();
+      if (errorNegocio || !negocio) throw new Error("No se pudo identificar el negocio.");
+      negocioId = negocio.id;
+    }
 
     const [respuestaProductos, respuestaServicios] = await Promise.all([
       supabase.from("bd_productos")
         .select("id,nombre,codigo,categoria,descripcion,precio,colores,tamanos,imagen_url,disponible")
-        .eq("negocio_id", negocio.id).eq("activo", true)
+        .eq("negocio_id", negocioId).eq("activo", true)
         .order("fecha_registro", { ascending: true }),
       supabase.from("bd_servicios")
         .select("id,nombre,descripcion,imagen_url,requiere_cotizacion")
-        .eq("negocio_id", negocio.id).eq("activo", true)
+        .eq("negocio_id", negocioId).eq("activo", true)
         .order("fecha_registro", { ascending: true })
     ]);
     if (respuestaProductos.error) throw respuestaProductos.error;
     if (respuestaServicios.error) throw respuestaServicios.error;
 
-    products = (respuestaProductos.data || []).map(convertirProducto);
-    services = (respuestaServicios.data || []).map(convertirServicio);
-    allItems = [...products, ...services];
-    renderProducts(obtenerFiltroActual());
-    renderServices();
-    renderCart();
-    console.info("Barrio Digital: catálogo conectado", {
+    const datos = {
+      productos: (respuestaProductos.data || []).map(convertirProducto),
+      servicios: (respuestaServicios.data || []).map(convertirServicio),
+      firma: JSON.stringify([respuestaProductos.data, respuestaServicios.data])
+    };
+
+    // Si no cambió nada, conservar DOM, scroll y ficha actual.
+    if (datos.firma === firmaCatalogo) return;
+
+    // No sustituir la ficha mientras alguien elige sus opciones.
+    if (fichaAbierta()) {
+      actualizacionPendiente = datos;
+      return;
+    }
+
+    aplicarDatosCatalogo(datos);
+    console.info("Barrio Digital: catálogo sincronizado", {
       productos: products.length, servicios: services.length
     });
   } catch (error) {
-    console.error("Error al cargar catálogo:", error);
-    mostrarErrorCatalogo();
+    console.error("Error al sincronizar catálogo:", error);
+    // Si falla una consulta posterior, conservar lo que ya se muestra.
+    if (primeraCarga) mostrarErrorCatalogo();
+  } finally {
+    consultaEnCurso = false;
   }
 }
 
@@ -345,6 +408,7 @@ function cerrarFicha() {
   document.body.classList.remove("bd-ficha-abierta");
   productoEnFicha = null;
   if (ultimoFoco?.isConnected) ultimoFoco.focus();
+  aplicarActualizacionPendiente();
 }
 
 /* CARRITO: cada combinación color/tamaño tiene su propia clave. */
@@ -586,6 +650,20 @@ document.addEventListener("keydown", event => {
 crearFicha();
 cargarCatalogo();
 observeReveals();
+
+// Sincronización en segundo plano mientras el catálogo está visible.
+setInterval(() => {
+  if (document.visibilityState === "visible") cargarCatalogo();
+}, INTERVALO_ACTUALIZACION);
+
+// Al regresar a la pestaña o recuperar internet, consultar enseguida.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") cargarCatalogo();
+});
+window.addEventListener("online", cargarCatalogo);
+window.addEventListener("pageshow", event => {
+  if (event.persisted) cargarCatalogo();
+});
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
