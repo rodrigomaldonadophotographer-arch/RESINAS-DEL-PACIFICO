@@ -8,7 +8,7 @@
   y funcionamiento sin conexión.
 */
 
-const CACHE = "resinas-pacifico-v1.0.4";
+const CACHE = "resinas-pacifico-v1.0.5";
 
 const CORE = [
   "./",
