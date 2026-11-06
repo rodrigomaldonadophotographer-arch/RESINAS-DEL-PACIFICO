@@ -540,11 +540,38 @@
 
             </div>
 
-            <p class="ayuda">
-              Las fotografías existentes se conservan.
-              La carga de imágenes se incorporará
-              en la siguiente etapa.
-            </p>
+           <div class="completo">
+  <label for="producto-foto">
+    Fotografía del producto
+  </label>
+
+  <input
+    id="producto-foto"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+  >
+
+  <img
+    id="producto-vista-previa"
+    alt="Vista previa del producto"
+    class="oculto"
+    style="
+      width:100%;
+      max-width:300px;
+      max-height:250px;
+      object-fit:contain;
+      margin-top:12px;
+      border-radius:8px;
+    "
+  >
+
+  <p class="ayuda">
+    Una fotografía por producto.
+    Máximo 2 MB.
+    Si no seleccionas otra, se conserva
+    la fotografía actual.
+  </p>
+</div>
 
             <div class="acciones">
 
