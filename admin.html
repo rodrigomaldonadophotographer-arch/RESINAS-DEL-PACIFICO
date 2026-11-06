@@ -1154,6 +1154,7 @@
     function abrirProducto(id = null) {
 
       $("form-producto").reset();
+      limpiarVistaPrevia("producto");
 
       $("producto-id").value = "";
 
@@ -1227,147 +1228,82 @@
     }
 
     async function guardarProducto(evento) {
-
       evento.preventDefault();
-
-      if (
-        !accesoAutorizado ||
-        !negocioActual
-      ) {
-        mostrarMensaje(
-          "Acceso no autorizado."
-        );
+      if (!accesoAutorizado || !negocioActual) {
+        mostrarMensaje("Acceso no autorizado.");
         return;
       }
 
       const boton = $("guardar-producto");
-
       boton.disabled = true;
+      let nuevaFotografia = null;
+      let guardadoConfirmado = false;
 
       try {
-
-        const id =
-          $("producto-id").value;
-
-        const precioTexto =
-          $("producto-precio").value.trim();
-
-        const precio = precioTexto === ""
-          ? null
-          : Number(precioTexto);
-
-        if (
-          precio !== null &&
-          (
-            !Number.isFinite(precio) ||
-            precio < 0
-          )
-        ) {
-          throw new Error(
-            "El precio no es válido."
-          );
+        const id = $("producto-id").value;
+        const precioTexto = $("producto-precio").value.trim();
+        const precio = precioTexto === "" ? null : Number(precioTexto);
+        if (precio !== null && (!Number.isFinite(precio) || precio < 0)) {
+          throw new Error("El precio no es válido.");
         }
-
         const datos = {
-
-          nombre:
-            $("producto-nombre").value.trim(),
-
-          codigo:
-            $("producto-codigo").value.trim() ||
-            null,
-
-          categoria:
-            $("producto-categoria").value,
-
-          descripcion:
-            $("producto-descripcion").value.trim(),
-
+          nombre: $("producto-nombre").value.trim(),
+          codigo: $("producto-codigo").value.trim() || null,
+          categoria: $("producto-categoria").value,
+          descripcion: $("producto-descripcion").value.trim(),
           precio,
-
-          colores: convertirLista(
-            $("producto-colores").value
-          ),
-
-          tamanos: convertirLista(
-            $("producto-tamanos").value
-          ),
-
-          disponible:
-            $("producto-disponible").checked,
-
-          activo:
-            $("producto-activo").checked
-
+          colores: convertirLista($("producto-colores").value),
+          tamanos: convertirLista($("producto-tamanos").value),
+          disponible: $("producto-disponible").checked,
+          activo: $("producto-activo").checked
         };
 
         if (!datos.nombre) {
-          throw new Error(
-            "Escribe el nombre del producto."
-          );
+          throw new Error("Escribe el nombre del producto.");
         }
 
-        let respuesta;
+        const archivo = $("producto-foto").files?.[0];
+        if (archivo) {
+          nuevaFotografia = await subirFotografia(archivo, "productos");
+          datos.imagen_url = nuevaFotografia.url;
+        }
 
-        if (id) {
-
-          respuesta = await supabase
-            .from("bd_productos")
-            .update(datos)
-            .eq("id", id)
-            .eq(
-              "negocio_id",
-              negocioActual.id
-            )
-            .select("id");
-
-        } else {
-
-          respuesta = await supabase
-            .from("bd_productos")
-            .insert({
+        const consulta = supabase.from("bd_productos");
+        const respuesta = id
+          ? await consulta.update(datos)
+              .eq("id", id)
+              .eq("negocio_id", negocioActual.id)
+              .select("id")
+          : await consulta.insert({
               ...datos,
-              negocio_id:
-                negocioActual.id
-            })
-            .select("id");
+              negocio_id: negocioActual.id
+            }).select("id");
 
+        if (respuesta.error) throw respuesta.error;
+        if (respuesta.data?.length !== 1) {
+          throw new Error("No se confirmó el guardado.");
         }
+        guardadoConfirmado = true;
+        limpiarVistaPrevia("producto");
+        $("panel-producto").classList.add("oculto");
 
-        if (respuesta.error) {
-          throw respuesta.error;
+        try {
+          await cargarDatos();
+          mostrarMensaje("Producto guardado correctamente en Supabase.");
+        } catch (recargaError) {
+          mostrarMensaje("Producto guardado. No se pudo actualizar el listado: " + recargaError.message);
         }
-
-        if (
-          !respuesta.data ||
-          respuesta.data.length !== 1
-        ) {
-          throw new Error(
-            "No se confirmó el guardado."
-          );
-        }
-
-        await cargarDatos();
-
-        $("panel-producto").classList.add(
-          "oculto"
-        );
-
-        mostrarMensaje(
-          "Producto guardado correctamente en Supabase."
-        );
-
       } catch (error) {
-
-        mostrarMensaje(
-          "Error al guardar producto: " +
-          error.message
-        );
-
+        let detalle = error.message;
+        if (nuevaFotografia && !guardadoConfirmado) {
+          const retirado = await retirarSubidaFallida(nuevaFotografia);
+          if (!retirado) {
+            detalle += " Fotografía sin vincular; informa al administrador general. Ruta: " + nuevaFotografia.ruta;
+          }
+        }
+        mostrarMensaje("Error al guardar producto: " + detalle);
       } finally {
-
         boton.disabled = false;
-
       }
     }
 
@@ -1437,6 +1373,7 @@
     function abrirServicio(id = null) {
 
       $("form-servicio").reset();
+      limpiarVistaPrevia("servicio");
 
       $("servicio-id").value = "";
 
@@ -1495,111 +1432,72 @@
     }
 
     async function guardarServicio(evento) {
-
       evento.preventDefault();
-
-      if (
-        !accesoAutorizado ||
-        !negocioActual
-      ) {
-        mostrarMensaje(
-          "Acceso no autorizado."
-        );
+      if (!accesoAutorizado || !negocioActual) {
+        mostrarMensaje("Acceso no autorizado.");
         return;
       }
 
       const boton = $("guardar-servicio");
-
       boton.disabled = true;
+      let nuevaFotografia = null;
+      let guardadoConfirmado = false;
 
       try {
-
-        const id =
-          $("servicio-id").value;
-
+        const id = $("servicio-id").value;
         const datos = {
-
-          nombre:
-            $("servicio-nombre").value.trim(),
-
-          descripcion:
-            $("servicio-descripcion").value.trim(),
-
-          requiere_cotizacion:
-            $("servicio-cotizacion").checked,
-
-          activo:
-            $("servicio-activo").checked
-
+          nombre: $("servicio-nombre").value.trim(),
+          descripcion: $("servicio-descripcion").value.trim(),
+          requiere_cotizacion: $("servicio-cotizacion").checked,
+          activo: $("servicio-activo").checked
         };
 
         if (!datos.nombre) {
-          throw new Error(
-            "Escribe el nombre del servicio."
-          );
+          throw new Error("Escribe el nombre del servicio.");
         }
 
-        let respuesta;
+        const archivo = $("servicio-foto").files?.[0];
+        if (archivo) {
+          nuevaFotografia = await subirFotografia(archivo, "servicios");
+          datos.imagen_url = nuevaFotografia.url;
+        }
 
-        if (id) {
-
-          respuesta = await supabase
-            .from("bd_servicios")
-            .update(datos)
-            .eq("id", id)
-            .eq(
-              "negocio_id",
-              negocioActual.id
-            )
-            .select("id");
-
-        } else {
-
-          respuesta = await supabase
-            .from("bd_servicios")
-            .insert({
+        const consulta = supabase.from("bd_servicios");
+        const respuesta = id
+          ? await consulta.update(datos)
+              .eq("id", id)
+              .eq("negocio_id", negocioActual.id)
+              .select("id")
+          : await consulta.insert({
               ...datos,
-              negocio_id:
-                negocioActual.id
-            })
-            .select("id");
+              negocio_id: negocioActual.id
+            }).select("id");
 
+        if (respuesta.error) throw respuesta.error;
+        if (respuesta.data?.length !== 1) {
+          throw new Error("No se confirmó el guardado.");
         }
+        guardadoConfirmado = true;
+        limpiarVistaPrevia("servicio");
+        $("panel-servicio").classList.add("oculto");
 
-        if (respuesta.error) {
-          throw respuesta.error;
+        try {
+          await cargarDatos();
+          mostrarMensaje("Servicio guardado correctamente en Supabase.");
+        } catch (recargaError) {
+          mostrarMensaje("Servicio guardado. No se pudo actualizar el listado: " + recargaError.message);
         }
-
-        if (
-          !respuesta.data ||
-          respuesta.data.length !== 1
-        ) {
-          throw new Error(
-            "No se confirmó el guardado."
-          );
-        }
-
-        await cargarDatos();
-
-        $("panel-servicio").classList.add(
-          "oculto"
-        );
-
-        mostrarMensaje(
-          "Servicio guardado correctamente en Supabase."
-        );
-
       } catch (error) {
-
-        mostrarMensaje(
-          "Error al guardar servicio: " +
-          error.message
-        );
-
+        let detalle = error.message;
+        if (nuevaFotografia && !guardadoConfirmado) {
+          const retirado = await retirarSubidaFallida(nuevaFotografia);
+          if (!retirado) {
+            detalle += " Fotografía sin vincular; informa al administrador general. Ruta: " + nuevaFotografia.ruta;
+          }
+        }
+        mostrarMensaje("Error al guardar servicio: " + detalle);
       } finally {
-
         boton.disabled = false;
-
       }
     }
 
@@ -1762,19 +1660,14 @@
     }
 
     async function retirarSubidaFallida(subida) {
-      if (!subida?.ruta) return;
-
-      const { error } = await supabase.storage
-        .from(BUCKET_IMAGENES)
-        .remove([subida.ruta]);
-
-      if (error) {
-        mostrarMensaje(
-          "La fotografía se subió, pero no se pudo " +
-          "vincular al registro ni retirar el archivo. " +
-          "Comunícalo al administrador general. Ruta: " +
-          subida.ruta
-        );
+      if (!subida?.ruta) return true;
+      try {
+        const { error } = await supabase.storage
+          .from(BUCKET_IMAGENES)
+          .remove([subida.ruta]);
+        return !error;
+      } catch {
+        return false;
       }
     }
 
