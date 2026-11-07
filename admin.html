@@ -310,6 +310,7 @@
   </style>
 </head>
 
+ 
 <body>
 
   <main class="contenedor">
@@ -540,38 +541,40 @@
 
             </div>
 
-           <div class="completo">
-  <label for="producto-foto">
-    Fotografía del producto
-  </label>
+            <div class="completo">
 
-  <input
-    id="producto-foto"
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-  >
+              <label for="producto-foto">
+                Fotografía del producto
+              </label>
 
-  <img
-    id="producto-vista-previa"
-    alt="Vista previa del producto"
-    class="oculto"
-    style="
-      width:100%;
-      max-width:300px;
-      max-height:250px;
-      object-fit:contain;
-      margin-top:12px;
-      border-radius:8px;
-    "
-  >
+              <input
+                id="producto-foto"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+              >
 
-  <p class="ayuda">
-    Una fotografía por producto.
-    Máximo 2 MB.
-    Si no seleccionas otra, se conserva
-    la fotografía actual.
-  </p>
-</div>
+              <img
+                id="producto-vista-previa"
+                alt="Vista previa del producto"
+                class="oculto"
+                style="
+                  width:100%;
+                  max-width:300px;
+                  max-height:250px;
+                  object-fit:contain;
+                  margin-top:12px;
+                  border-radius:8px;
+                "
+              >
+
+              <p class="ayuda">
+                Una fotografía por producto.
+                Máximo 2 MB.
+                Si no seleccionas otra, se conserva
+                la fotografía actual.
+              </p>
+
+            </div>
 
             <div class="acciones">
 
@@ -677,35 +680,35 @@
             </label>
 
             <label for="servicio-foto">
-  Fotografía del servicio
-</label>
+              Fotografía del servicio
+            </label>
 
-<input
-  id="servicio-foto"
-  type="file"
-  accept="image/jpeg,image/png,image/webp"
->
+            <input
+              id="servicio-foto"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            >
 
-<img
-  id="servicio-vista-previa"
-  alt="Vista previa del servicio"
-  class="oculto"
-  style="
-    width:100%;
-    max-width:300px;
-    max-height:250px;
-    object-fit:contain;
-    margin-top:12px;
-    border-radius:8px;
-  "
->
+            <img
+              id="servicio-vista-previa"
+              alt="Vista previa del servicio"
+              class="oculto"
+              style="
+                width:100%;
+                max-width:300px;
+                max-height:250px;
+                object-fit:contain;
+                margin-top:12px;
+                border-radius:8px;
+              "
+            >
 
-<p class="ayuda">
-  Una fotografía por servicio.
-  Máximo 2 MB.
-  Si no seleccionas otra, se conserva
-  la fotografía actual.
-</p>
+            <p class="ayuda">
+              Una fotografía por servicio.
+              Máximo 2 MB.
+              Si no seleccionas otra, se conserva
+              la fotografía actual.
+            </p>
 
             <div class="acciones">
 
@@ -752,6 +755,7 @@
 
   <script type="module">
 
+  
     import {
       createClient
     } from "https://esm.sh/@supabase/supabase-js@2";
@@ -816,6 +820,7 @@
 
     function mostrarMensaje(texto) {
       $("resultado").textContent = texto;
+
       $("resultado").classList.remove(
         "oculto"
       );
@@ -823,6 +828,7 @@
 
     function limpiarMensaje() {
       $("resultado").textContent = "";
+
       $("resultado").classList.add(
         "oculto"
       );
@@ -1142,6 +1148,14 @@
                 EDITAR PRODUCTO
               </button>
 
+              <button
+                type="button"
+                class="peligro"
+                data-eliminar-producto="${escapeHtml(producto.id)}"
+              >
+                ELIMINAR PRODUCTO
+              </button>
+
             </article>
           `;
         }).join("");
@@ -1158,11 +1172,8 @@
 
       $("producto-id").value = "";
 
-      $("producto-disponible").checked =
-        true;
-
-      $("producto-activo").checked =
-        true;
+      $("producto-disponible").checked = true;
+      $("producto-activo").checked = true;
 
       if (id) {
 
@@ -1227,86 +1238,312 @@
       });
     }
 
+    // ======================================
+    // GUARDAR PRODUCTO
+    // ======================================
+
     async function guardarProducto(evento) {
+
       evento.preventDefault();
+
       if (!accesoAutorizado || !negocioActual) {
         mostrarMensaje("Acceso no autorizado.");
         return;
       }
 
       const boton = $("guardar-producto");
+
       boton.disabled = true;
+
       let nuevaFotografia = null;
       let guardadoConfirmado = false;
 
       try {
-        const id = $("producto-id").value;
-        const precioTexto = $("producto-precio").value.trim();
-        const precio = precioTexto === "" ? null : Number(precioTexto);
-        if (precio !== null && (!Number.isFinite(precio) || precio < 0)) {
-          throw new Error("El precio no es válido.");
+
+        const id =
+          $("producto-id").value;
+
+        const precioTexto =
+          $("producto-precio").value.trim();
+
+        const precio =
+          precioTexto === ""
+            ? null
+            : Number(precioTexto);
+
+        if (
+          precio !== null &&
+          (
+            !Number.isFinite(precio) ||
+            precio < 0
+          )
+        ) {
+          throw new Error(
+            "El precio no es válido."
+          );
         }
+
         const datos = {
-          nombre: $("producto-nombre").value.trim(),
-          codigo: $("producto-codigo").value.trim() || null,
-          categoria: $("producto-categoria").value,
-          descripcion: $("producto-descripcion").value.trim(),
+
+          nombre:
+            $("producto-nombre").value.trim(),
+
+          codigo:
+            $("producto-codigo").value.trim() || null,
+
+          categoria:
+            $("producto-categoria").value,
+
+          descripcion:
+            $("producto-descripcion").value.trim(),
+
           precio,
-          colores: convertirLista($("producto-colores").value),
-          tamanos: convertirLista($("producto-tamanos").value),
-          disponible: $("producto-disponible").checked,
-          activo: $("producto-activo").checked
+
+          colores:
+            convertirLista(
+              $("producto-colores").value
+            ),
+
+          tamanos:
+            convertirLista(
+              $("producto-tamanos").value
+            ),
+
+          disponible:
+            $("producto-disponible").checked,
+
+          activo:
+            $("producto-activo").checked
+
         };
 
         if (!datos.nombre) {
-          throw new Error("Escribe el nombre del producto.");
+          throw new Error(
+            "Escribe el nombre del producto."
+          );
         }
 
-        const archivo = $("producto-foto").files?.[0];
+        // ==================================
+        // SUBIR FOTOGRAFIA NUEVA
+        // ==================================
+
+        const archivo =
+          $("producto-foto").files?.[0];
+
         if (archivo) {
-          nuevaFotografia = await subirFotografia(archivo, "productos");
-          datos.imagen_url = nuevaFotografia.url;
+
+          nuevaFotografia =
+            await subirFotografia(
+              archivo,
+              "productos"
+            );
+
+          datos.imagen_url =
+            nuevaFotografia.url;
+
         }
 
-        const consulta = supabase.from("bd_productos");
+        // ==================================
+        // INSERTAR O ACTUALIZAR
+        // ==================================
+
+        const consulta =
+          supabase.from("bd_productos");
+
         const respuesta = id
-          ? await consulta.update(datos)
-              .eq("id", id)
-              .eq("negocio_id", negocioActual.id)
-              .select("id")
-          : await consulta.insert({
-              ...datos,
-              negocio_id: negocioActual.id
-            }).select("id");
 
-        if (respuesta.error) throw respuesta.error;
-        if (respuesta.data?.length !== 1) {
-          throw new Error("No se confirmó el guardado.");
+          ? await consulta
+              .update(datos)
+              .eq("id", id)
+              .eq(
+                "negocio_id",
+                negocioActual.id
+              )
+              .select("id")
+
+          : await consulta
+              .insert({
+                ...datos,
+                negocio_id: negocioActual.id
+              })
+              .select("id");
+
+        if (respuesta.error) {
+          throw respuesta.error;
         }
+
+        if (
+          respuesta.data?.length !== 1
+        ) {
+          throw new Error(
+            "No se confirmó el guardado."
+          );
+        }
+
         guardadoConfirmado = true;
+
         limpiarVistaPrevia("producto");
-        $("panel-producto").classList.add("oculto");
+
+        $("panel-producto").classList.add(
+          "oculto"
+        );
+
+        // ==================================
+        // ACTUALIZAR LISTADO
+        // ==================================
 
         try {
+
           await cargarDatos();
-          mostrarMensaje("Producto guardado correctamente en Supabase.");
+
+          mostrarMensaje(
+            "Producto guardado correctamente en Supabase."
+          );
+
         } catch (recargaError) {
-          mostrarMensaje("Producto guardado. No se pudo actualizar el listado: " + recargaError.message);
+
+          mostrarMensaje(
+            "Producto guardado. " +
+            "No se pudo actualizar el listado: " +
+            recargaError.message
+          );
+
         }
+
       } catch (error) {
-        let detalle = error.message;
-        if (nuevaFotografia && !guardadoConfirmado) {
-          const retirado = await retirarSubidaFallida(nuevaFotografia);
-          if (!retirado) {
-            detalle += " Fotografía sin vincular; informa al administrador general. Ruta: " + nuevaFotografia.ruta;
-          }
+
+        let detalle =
+          error.message || "Error desconocido.";
+
+        // No borrar directamente desde
+        // el navegador: Storage restringe
+        // DELETE a los procesos internos.
+
+        if (
+          nuevaFotografia &&
+          !guardadoConfirmado
+        ) {
+
+          detalle +=
+            " La fotografía subida podría " +
+            "haber quedado sin vincular. " +
+            "Informa al administrador general. " +
+            "Ruta: " +
+            nuevaFotografia.ruta;
+
         }
-        mostrarMensaje("Error al guardar producto: " + detalle);
+
+        mostrarMensaje(
+          "Error al guardar producto: " +
+          detalle
+        );
+
       } finally {
+
         boton.disabled = false;
+
       }
     }
 
+    // ======================================
+    // ELIMINAR PRODUCTO
+    // ======================================
+
+    async function eliminarProducto(id) {
+
+      if (
+        !accesoAutorizado ||
+        !negocioActual
+      ) {
+        mostrarMensaje(
+          "Acceso no autorizado."
+        );
+        return;
+      }
+
+      const producto = productos.find(
+        item => item.id === id
+      );
+
+      if (!producto) {
+        mostrarMensaje(
+          "Producto no encontrado."
+        );
+        return;
+      }
+
+      const confirmar = window.confirm(
+        "¿ELIMINAR ESTE PRODUCTO?\n\n" +
+        producto.nombre +
+        "\n\n" +
+        "Esta acción eliminará el registro " +
+        "del catálogo.\n\n" +
+        "La fotografía se enviará a limpieza " +
+        "según los mecanismos configurados " +
+        "en Supabase.\n\n" +
+        "¿Deseas continuar?"
+      );
+
+      if (!confirmar) {
+        return;
+      }
+
+      mostrarMensaje(
+        "Eliminando producto..."
+      );
+
+      try {
+
+        const {
+          data,
+          error
+        } = await supabase
+          .from("bd_productos")
+          .delete()
+          .eq("id", id)
+          .eq(
+            "negocio_id",
+            negocioActual.id
+          )
+          .select("id");
+
+        if (error) {
+          throw error;
+        }
+
+        if (
+          !data ||
+          data.length !== 1
+        ) {
+          throw new Error(
+            "No se confirmó la eliminación. " +
+            "Comprueba los permisos del negocio."
+          );
+        }
+
+        await cargarDatos();
+
+        mostrarMensaje(
+          "Producto eliminado del catálogo. " +
+          "La limpieza física de su fotografía " +
+          "se procesa por separado en Supabase."
+        );
+
+      } catch (error) {
+
+        mostrarMensaje(
+          "Error al eliminar producto: " +
+          error.message
+        );
+
+      }
+    }
+
+    // ======================================
+    // FIN DE LA PARTE 4
+    // ======================================
+
+    
     // ======================================
     // LISTADO DE SERVICIOS
     // ======================================
@@ -1318,6 +1555,7 @@
         " servicios registrados";
 
       if (!servicios.length) {
+
         $("lista-servicios").innerHTML =
           "<p>No hay servicios registrados.</p>";
 
@@ -1361,6 +1599,14 @@
                 EDITAR SERVICIO
               </button>
 
+              <button
+                type="button"
+                class="peligro"
+                data-eliminar-servicio="${escapeHtml(servicio.id)}"
+              >
+                ELIMINAR SERVICIO
+              </button>
+
             </article>
           `;
         }).join("");
@@ -1373,6 +1619,7 @@
     function abrirServicio(id = null) {
 
       $("form-servicio").reset();
+
       limpiarVistaPrevia("servicio");
 
       $("servicio-id").value = "";
@@ -1390,9 +1637,11 @@
         );
 
         if (!servicio) {
+
           mostrarMensaje(
             "Servicio no encontrado."
           );
+
           return;
         }
 
@@ -1431,78 +1680,294 @@
       });
     }
 
+    // ======================================
+    // GUARDAR SERVICIO
+    // ======================================
+
     async function guardarServicio(evento) {
+
       evento.preventDefault();
-      if (!accesoAutorizado || !negocioActual) {
-        mostrarMensaje("Acceso no autorizado.");
+
+      if (
+        !accesoAutorizado ||
+        !negocioActual
+      ) {
+
+        mostrarMensaje(
+          "Acceso no autorizado."
+        );
+
         return;
       }
 
-      const boton = $("guardar-servicio");
+      const boton =
+        $("guardar-servicio");
+
       boton.disabled = true;
+
       let nuevaFotografia = null;
+
       let guardadoConfirmado = false;
 
       try {
-        const id = $("servicio-id").value;
+
+        const id =
+          $("servicio-id").value;
+
         const datos = {
-          nombre: $("servicio-nombre").value.trim(),
-          descripcion: $("servicio-descripcion").value.trim(),
-          requiere_cotizacion: $("servicio-cotizacion").checked,
-          activo: $("servicio-activo").checked
+
+          nombre:
+            $("servicio-nombre").value.trim(),
+
+          descripcion:
+            $("servicio-descripcion").value.trim(),
+
+          requiere_cotizacion:
+            $("servicio-cotizacion").checked,
+
+          activo:
+            $("servicio-activo").checked
+
         };
 
         if (!datos.nombre) {
-          throw new Error("Escribe el nombre del servicio.");
+
+          throw new Error(
+            "Escribe el nombre del servicio."
+          );
         }
 
-        const archivo = $("servicio-foto").files?.[0];
+        // ==================================
+        // SUBIR NUEVA FOTOGRAFIA
+        // ==================================
+
+        const archivo =
+          $("servicio-foto").files?.[0];
+
         if (archivo) {
-          nuevaFotografia = await subirFotografia(archivo, "servicios");
-          datos.imagen_url = nuevaFotografia.url;
+
+          nuevaFotografia =
+            await subirFotografia(
+              archivo,
+              "servicios"
+            );
+
+          datos.imagen_url =
+            nuevaFotografia.url;
+
         }
 
-        const consulta = supabase.from("bd_servicios");
+        // ==================================
+        // INSERTAR O ACTUALIZAR
+        // ==================================
+
+        const consulta =
+          supabase.from("bd_servicios");
+
         const respuesta = id
-          ? await consulta.update(datos)
-              .eq("id", id)
-              .eq("negocio_id", negocioActual.id)
-              .select("id")
-          : await consulta.insert({
-              ...datos,
-              negocio_id: negocioActual.id
-            }).select("id");
 
-        if (respuesta.error) throw respuesta.error;
-        if (respuesta.data?.length !== 1) {
-          throw new Error("No se confirmó el guardado.");
+          ? await consulta
+              .update(datos)
+              .eq("id", id)
+              .eq(
+                "negocio_id",
+                negocioActual.id
+              )
+              .select("id")
+
+          : await consulta
+              .insert({
+                ...datos,
+                negocio_id:
+                  negocioActual.id
+              })
+              .select("id");
+
+        if (respuesta.error) {
+
+          throw respuesta.error;
         }
+
+        if (
+          respuesta.data?.length !== 1
+        ) {
+
+          throw new Error(
+            "No se confirmó el guardado."
+          );
+        }
+
         guardadoConfirmado = true;
+
         limpiarVistaPrevia("servicio");
-        $("panel-servicio").classList.add("oculto");
+
+        $("panel-servicio").classList.add(
+          "oculto"
+        );
+
+        // ==================================
+        // ACTUALIZAR LISTADO
+        // ==================================
 
         try {
+
           await cargarDatos();
-          mostrarMensaje("Servicio guardado correctamente en Supabase.");
+
+          mostrarMensaje(
+            "Servicio guardado correctamente en Supabase."
+          );
+
         } catch (recargaError) {
-          mostrarMensaje("Servicio guardado. No se pudo actualizar el listado: " + recargaError.message);
+
+          mostrarMensaje(
+            "Servicio guardado. " +
+            "No se pudo actualizar el listado: " +
+            recargaError.message
+          );
+
         }
+
       } catch (error) {
-        let detalle = error.message;
-        if (nuevaFotografia && !guardadoConfirmado) {
-          const retirado = await retirarSubidaFallida(nuevaFotografia);
-          if (!retirado) {
-            detalle += " Fotografía sin vincular; informa al administrador general. Ruta: " + nuevaFotografia.ruta;
-          }
+
+        let detalle =
+          error.message || "Error desconocido.";
+
+        // Storage no permite al navegador
+        // borrar directamente las fotografias.
+
+        if (
+          nuevaFotografia &&
+          !guardadoConfirmado
+        ) {
+
+          detalle +=
+            " La fotografía subida podría " +
+            "haber quedado sin vincular. " +
+            "Informa al administrador general. " +
+            "Ruta: " +
+            nuevaFotografia.ruta;
+
         }
-        mostrarMensaje("Error al guardar servicio: " + detalle);
+
+        mostrarMensaje(
+          "Error al guardar servicio: " +
+          detalle
+        );
+
       } finally {
+
         boton.disabled = false;
+
       }
     }
 
     // ======================================
-    // PESTANAS
+    // ELIMINAR SERVICIO
+    // ======================================
+
+    async function eliminarServicio(id) {
+
+      if (
+        !accesoAutorizado ||
+        !negocioActual
+      ) {
+
+        mostrarMensaje(
+          "Acceso no autorizado."
+        );
+
+        return;
+      }
+
+      const servicio = servicios.find(
+        item => item.id === id
+      );
+
+      if (!servicio) {
+
+        mostrarMensaje(
+          "Servicio no encontrado."
+        );
+
+        return;
+      }
+
+      const confirmar = window.confirm(
+        "¿ELIMINAR ESTE SERVICIO?\n\n" +
+        servicio.nombre +
+        "\n\n" +
+        "Esta acción eliminará el servicio " +
+        "del catálogo.\n\n" +
+        "La fotografía se enviará a limpieza " +
+        "según los mecanismos configurados " +
+        "en Supabase.\n\n" +
+        "¿Deseas continuar?"
+      );
+
+      if (!confirmar) {
+        return;
+      }
+
+      mostrarMensaje(
+        "Eliminando servicio..."
+      );
+
+      try {
+
+        const {
+          data,
+          error
+        } = await supabase
+          .from("bd_servicios")
+          .delete()
+          .eq("id", id)
+          .eq(
+            "negocio_id",
+            negocioActual.id
+          )
+          .select("id");
+
+        if (error) {
+
+          throw error;
+        }
+
+        if (
+          !data ||
+          data.length !== 1
+        ) {
+
+          throw new Error(
+            "No se confirmó la eliminación. " +
+            "Comprueba los permisos del negocio."
+          );
+        }
+
+        await cargarDatos();
+
+        mostrarMensaje(
+          "Servicio eliminado del catálogo. " +
+          "La limpieza física de su fotografía " +
+          "se procesa por separado en Supabase."
+        );
+
+      } catch (error) {
+
+        mostrarMensaje(
+          "Error al eliminar servicio: " +
+          error.message
+        );
+
+      }
+    }
+
+    // ======================================
+    // FIN DE LA PARTE 5
+    // ======================================
+
+    
+    // ======================================
+    // PESTAÑAS
     // ======================================
 
     function cambiarPestana(tipo) {
@@ -1533,7 +1998,6 @@
       limpiarMensaje();
     }
 
-    
     // ======================================
     // FOTOGRAFIAS - BARRIO DIGITAL
     // ======================================
@@ -1546,10 +2010,14 @@
       "image/webp"
     ];
 
-    const MAX_IMAGEN_BYTES = 2 * 1024 * 1024;
+    const MAX_IMAGEN_BYTES =
+      2 * 1024 * 1024;
 
     function validarFotografia(archivo) {
-      if (!archivo) return;
+
+      if (!archivo) {
+        return;
+      }
 
       if (!TIPOS_IMAGEN.includes(archivo.type)) {
         throw new Error(
@@ -1570,55 +2038,107 @@
       }
     }
 
-    function mostrarVistaPrevia(tipo) {
-      const entrada = $(tipo + "-foto");
-      const vista = $(tipo + "-vista-previa");
+    // ======================================
+    // VISTA PREVIA
+    // ======================================
 
-      const archivo = entrada.files?.[0];
+    function mostrarVistaPrevia(tipo) {
+
+      const entrada =
+        $(tipo + "-foto");
+
+      const vista =
+        $(tipo + "-vista-previa");
+
+      const archivo =
+        entrada.files?.[0];
 
       if (!archivo) {
+
         vista.removeAttribute("src");
+
         vista.classList.add("oculto");
+
         return;
       }
 
       try {
+
         validarFotografia(archivo);
 
-        const lector = new FileReader();
+        const lector =
+          new FileReader();
 
         lector.onload = () => {
+
           vista.src = lector.result;
-          vista.classList.remove("oculto");
+
+          vista.classList.remove(
+            "oculto"
+          );
         };
 
         lector.readAsDataURL(archivo);
 
       } catch (error) {
+
         entrada.value = "";
+
         vista.removeAttribute("src");
+
         vista.classList.add("oculto");
+
         mostrarMensaje(error.message);
       }
     }
 
     function limpiarVistaPrevia(tipo) {
-      const entrada = $(tipo + "-foto");
-      const vista = $(tipo + "-vista-previa");
+
+      const entrada =
+        $(tipo + "-foto");
+
+      const vista =
+        $(tipo + "-vista-previa");
 
       entrada.value = "";
+
       vista.removeAttribute("src");
+
       vista.classList.add("oculto");
     }
 
-    async function subirFotografia(archivo, carpeta) {
-      if (!archivo) return null;
+    // ======================================
+    // SUBIR FOTOGRAFIA
+    // ======================================
 
-      if (!accesoAutorizado || !negocioActual) {
-        throw new Error("Acceso no autorizado.");
+    async function subirFotografia(
+      archivo,
+      carpeta
+    ) {
+
+      if (!archivo) {
+        return null;
+      }
+
+      if (
+        !accesoAutorizado ||
+        !negocioActual
+      ) {
+        throw new Error(
+          "Acceso no autorizado."
+        );
       }
 
       validarFotografia(archivo);
+
+      if (
+        carpeta !== "productos" &&
+        carpeta !== "servicios"
+      ) {
+        throw new Error(
+          "Carpeta no autorizada."
+        );
+      }
 
       const extension = {
         "image/jpeg": "jpg",
@@ -1626,7 +2146,10 @@
         "image/webp": "webp"
       }[archivo.type];
 
-      const nombre = crypto.randomUUID() + "." + extension;
+      const nombre =
+        crypto.randomUUID() +
+        "." +
+        extension;
 
       const ruta = [
         negocioActual.id,
@@ -1634,24 +2157,31 @@
         nombre
       ].join("/");
 
-      const { error } = await supabase.storage
-        .from(BUCKET_IMAGENES)
-        .upload(ruta, archivo, {
-          contentType: archivo.type,
-          cacheControl: "3600",
-          upsert: false
-        });
+      const { error } =
+        await supabase.storage
+          .from(BUCKET_IMAGENES)
+          .upload(
+            ruta,
+            archivo,
+            {
+              contentType: archivo.type,
+              cacheControl: "3600",
+              upsert: false
+            }
+          );
 
       if (error) {
+
         throw new Error(
           "No se pudo subir la fotografía: " +
           error.message
         );
       }
 
-      const { data } = supabase.storage
-        .from(BUCKET_IMAGENES)
-        .getPublicUrl(ruta);
+      const { data } =
+        supabase.storage
+          .from(BUCKET_IMAGENES)
+          .getPublicUrl(ruta);
 
       return {
         ruta,
@@ -1659,17 +2189,9 @@
       };
     }
 
-    async function retirarSubidaFallida(subida) {
-      if (!subida?.ruta) return true;
-      try {
-        const { error } = await supabase.storage
-          .from(BUCKET_IMAGENES)
-          .remove([subida.ruta]);
-        return !error;
-      } catch {
-        return false;
-      }
-    }
+    // ======================================
+    // EVENTOS DE FOTOGRAFIAS
+    // ======================================
 
     $("producto-foto").addEventListener(
       "change",
@@ -1681,9 +2203,8 @@
       () => mostrarVistaPrevia("servicio")
     );
 
-
     // ======================================
-    // EVENTOS
+    // EVENTOS DE SESION
     // ======================================
 
     $("form-login").addEventListener(
@@ -1696,6 +2217,10 @@
       cerrarSesion
     );
 
+    // ======================================
+    // EVENTOS DE PESTAÑAS
+    // ======================================
+
     $("tab-productos").addEventListener(
       "click",
       () => cambiarPestana("productos")
@@ -1705,6 +2230,10 @@
       "click",
       () => cambiarPestana("servicios")
     );
+
+    // ======================================
+    // AGREGAR PRODUCTOS Y SERVICIOS
+    // ======================================
 
     $("nuevo-producto").addEventListener(
       "click",
@@ -1716,23 +2245,37 @@
       () => abrirServicio()
     );
 
+    // ======================================
+    // CANCELAR FORMULARIOS
+    // ======================================
+
     $("cancelar-producto").addEventListener(
       "click",
       () => {
+
         $("panel-producto").classList.add(
           "oculto"
         );
+
+        limpiarVistaPrevia("producto");
       }
     );
 
     $("cancelar-servicio").addEventListener(
       "click",
       () => {
+
         $("panel-servicio").classList.add(
           "oculto"
         );
+
+        limpiarVistaPrevia("servicio");
       }
     );
+
+    // ======================================
+    // GUARDAR PRODUCTOS Y SERVICIOS
+    // ======================================
 
     $("form-producto").addEventListener(
       "submit",
@@ -1744,9 +2287,13 @@
       guardarServicio
     );
 
+    // ======================================
+    // EDITAR Y ELIMINAR REGISTROS
+    // ======================================
+
     document.addEventListener(
       "click",
-      evento => {
+      async evento => {
 
         const botonProducto =
           evento.target.closest(
@@ -1754,9 +2301,34 @@
           );
 
         if (botonProducto) {
+
           abrirProducto(
             botonProducto.dataset.editarProducto
           );
+
+          return;
+        }
+
+        const botonEliminarProducto =
+          evento.target.closest(
+            "[data-eliminar-producto]"
+          );
+
+        if (botonEliminarProducto) {
+
+          botonEliminarProducto.disabled = true;
+
+          try {
+
+            await eliminarProducto(
+              botonEliminarProducto.dataset.eliminarProducto
+            );
+
+          } finally {
+
+            botonEliminarProducto.disabled = false;
+          }
+
           return;
         }
 
@@ -1766,9 +2338,33 @@
           );
 
         if (botonServicio) {
+
           abrirServicio(
             botonServicio.dataset.editarServicio
           );
+
+          return;
+        }
+
+        const botonEliminarServicio =
+          evento.target.closest(
+            "[data-eliminar-servicio]"
+          );
+
+        if (botonEliminarServicio) {
+
+          botonEliminarServicio.disabled = true;
+
+          try {
+
+            await eliminarServicio(
+              botonEliminarServicio.dataset.eliminarServicio
+            );
+
+          } finally {
+
+            botonEliminarServicio.disabled = false;
+          }
         }
       }
     );
@@ -1791,7 +2387,9 @@
         }
 
         if (!session) {
+
           mostrarLogin();
+
           return;
         }
 
@@ -1815,13 +2413,22 @@
       }
     }
 
+    // ======================================
+    // CAMBIOS DE AUTENTICACION
+    // ======================================
+
     supabase.auth.onAuthStateChange(
-      (evento) => {
+      evento => {
+
         if (evento === "SIGNED_OUT") {
           mostrarLogin();
         }
       }
     );
+
+    // ======================================
+    // INICIAR ADMINISTRADOR
+    // ======================================
 
     iniciarAplicacion();
 
